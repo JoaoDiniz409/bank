@@ -1,6 +1,7 @@
 package acc.accenture.bank.service;
 
 import acc.accenture.bank.dtos.ClienteDTO;
+import acc.accenture.bank.exception.EntidadeNaoEncontradaException;
 import acc.accenture.bank.mapper.ClienteMapper;
 import acc.accenture.bank.model.Cliente;
 import acc.accenture.bank.repository.ClienteRepository;
@@ -28,7 +29,7 @@ public class ClienteService {
     public ClienteDTO findById(Long id) {
         return clienteRepository.findById(id)
                 .map(clienteMapper::toDTO)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado")); // Exceção customizada recomendada
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Cliente"));
     }
 
     public ClienteDTO save(ClienteDTO clienteDTO) {
@@ -37,10 +38,16 @@ public class ClienteService {
     }
 
     public void deleteById(Long id) {
+        if (!clienteRepository.existsById(id)) {
+            throw new EntidadeNaoEncontradaException("Cliente");
+        }
         clienteRepository.deleteById(id);
     }
 
     public ClienteDTO update(Long id, ClienteDTO clienteDTO) {
+        if (!clienteRepository.existsById(id)) {
+            throw new EntidadeNaoEncontradaException("Cliente");
+        }
         Cliente cliente = clienteMapper.toEntity(clienteDTO);
         cliente.setId(id);
         return clienteMapper.toDTO(clienteRepository.save(cliente));

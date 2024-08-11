@@ -1,6 +1,7 @@
 package acc.accenture.bank.service;
 
 import acc.accenture.bank.dtos.AgenciaDTO;
+import acc.accenture.bank.exception.EntidadeNaoEncontradaException;
 import acc.accenture.bank.mapper.AgenciaMapper;
 import acc.accenture.bank.model.Agencia;
 import acc.accenture.bank.repository.AgenciaRepository;
@@ -28,7 +29,7 @@ public class AgenciaService {
     public AgenciaDTO findById(Long id) {
         return agenciaRepository.findById(id)
                 .map(agenciaMapper::toDTO)
-                .orElseThrow(() -> new RuntimeException("Agência não encontrada")); // Exceção customizada recomendada
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Agencia"));
     }
 
     public AgenciaDTO save(AgenciaDTO agenciaDTO) {
@@ -37,10 +38,16 @@ public class AgenciaService {
     }
 
     public void deleteById(Long id) {
+        if (!agenciaRepository.existsById(id)) {
+            throw new EntidadeNaoEncontradaException("Agência");
+        }
         agenciaRepository.deleteById(id);
     }
 
     public AgenciaDTO update(Long id, AgenciaDTO agenciaDTO) {
+        if (!agenciaRepository.existsById(id)) {
+            throw new EntidadeNaoEncontradaException("Agência");
+        }
         Agencia agencia = agenciaMapper.toEntity(agenciaDTO);
         agencia.setId(id);
         return agenciaMapper.toDTO(agenciaRepository.save(agencia));

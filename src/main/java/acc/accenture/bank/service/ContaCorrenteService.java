@@ -2,6 +2,9 @@ package acc.accenture.bank.service;
 
 import acc.accenture.bank.dtos.ContaCorrenteDTO;
 import acc.accenture.bank.dtos.ExtratoDTO;
+import acc.accenture.bank.exception.EntidadeNaoEncontradaException;
+import acc.accenture.bank.exception.OperacaoDesconhecidaException;
+import acc.accenture.bank.exception.SaldoInsuficienteException;
 import acc.accenture.bank.mapper.ContaCorrenteMapper;
 import acc.accenture.bank.mapper.ExtratoMapper;
 import acc.accenture.bank.model.ContaCorrente;
@@ -40,7 +43,7 @@ public class ContaCorrenteService {
     public ContaCorrenteDTO findById(Long id) {
         return contaCorrenteRepository.findById(id)
                 .map(contaCorrenteMapper::toDTO)
-                .orElseThrow(() -> new RuntimeException("Conta Corrente não encontrada")); // Exceção customizada recomendada
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Conta Corrente"));
     }
 
     public ContaCorrenteDTO save(ContaCorrenteDTO contaCorrenteDTO) {
@@ -49,10 +52,16 @@ public class ContaCorrenteService {
     }
 
     public void deleteById(Long id) {
+        if (!contaCorrenteRepository.existsById(id)) {
+            throw new EntidadeNaoEncontradaException("Conta Corrente");
+        }
         contaCorrenteRepository.deleteById(id);
     }
 
     public ContaCorrenteDTO update(Long id, ContaCorrenteDTO contaCorrenteDTO) {
+        if (!contaCorrenteRepository.existsById(id)) {
+            throw new EntidadeNaoEncontradaException("Conta Corrente");
+        }
         ContaCorrente contaCorrente = contaCorrenteMapper.toEntity(contaCorrenteDTO);
         contaCorrente.setId(id);
         return contaCorrenteMapper.toDTO(contaCorrenteRepository.save(contaCorrente));
@@ -61,7 +70,7 @@ public class ContaCorrenteService {
     @Transactional
     public void depositar(Long id, BigDecimal valor) {
         ContaCorrente contaCorrente = contaCorrenteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Conta Corrente não encontrada"));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Conta Corrente"));
         contaCorrente.setSaldo(contaCorrente.getSaldo().add(valor));
         contaCorrenteRepository.save(contaCorrente);
     }
@@ -69,9 +78,9 @@ public class ContaCorrenteService {
     @Transactional
     public void sacar(Long id, BigDecimal valor) {
         ContaCorrente contaCorrente = contaCorrenteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Conta Corrente não encontrada"));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Conta Corrente"));
         if (contaCorrente.getSaldo().compareTo(valor) < 0) {
-            throw new RuntimeException("Saldo insuficiente"); // Exceção customizada recomendada
+            throw new SaldoInsuficienteException();
         }
         contaCorrente.setSaldo(contaCorrente.getSaldo().subtract(valor));
         contaCorrenteRepository.save(contaCorrente);
@@ -80,13 +89,13 @@ public class ContaCorrenteService {
     @Transactional
     public void transferir(Long idOrigem, Long idDestino, BigDecimal valor) {
         ContaCorrente contaOrigem = contaCorrenteRepository.findById(idOrigem)
-                .orElseThrow(() -> new RuntimeException("Conta Corrente de origem não encontrada"));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Conta Corrente de origem"));
 
         ContaCorrente contaDestino = contaCorrenteRepository.findById(idDestino)
-                .orElseThrow(() -> new RuntimeException("Conta Corrente de destino não encontrada")); // Exceção customizada
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Conta Corrente de destino"));
 
         if (contaOrigem.getSaldo().compareTo(valor) < 0) {
-            throw new RuntimeException("Saldo insuficiente");
+            throw new SaldoInsuficienteException();
         }
 
         contaOrigem.setSaldo(contaOrigem.getSaldo().subtract(valor));
@@ -98,7 +107,7 @@ public class ContaCorrenteService {
 
     public BigDecimal recalcularSaldo(Long id) {
         ContaCorrente contaCorrente = contaCorrenteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Conta Corrente não encontrada"));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Conta Corrente"));
 
         List<Extrato> extratos = extratoRepository.findByContaCorrenteId(id);
         BigDecimal saldoRecalculado = BigDecimal.ZERO;
@@ -114,7 +123,8 @@ public class ContaCorrenteService {
                     saldoRecalculado = saldoRecalculado.subtract(extrato.getValor());
                     break;
                 default:
-                    throw new RuntimeException("Operação desconhecida: " + extrato.getOperacao());
+                    //throw new RuntimeException("Operação desconhecida: " + extrato.getOperacao());
+                    throw new OperacaoDesconhecidaException("Operação desconhecida: " + extrato.getOperacao());
             }
         }
         contaCorrente.setSaldo(saldoRecalculado);
@@ -125,7 +135,7 @@ public class ContaCorrenteService {
 
     public List<ExtratoDTO> exibirExtrato(Long contaCorrenteId) {
         ContaCorrente contaCorrente = contaCorrenteRepository.findById(contaCorrenteId)
-                .orElseThrow(() -> new RuntimeException("Conta Corrente não encontrada"));
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Conta Corrente"));
 
         // Recuperar todas as entradas de extrato para a conta corrente especificada
         List<Extrato> extratos = extratoRepository.findByContaCorrenteId(contaCorrenteId);
