@@ -16,7 +16,6 @@ public class ExtratoMapper {
 
     public ExtratoDTO toDTO(Extrato extrato) {
         return new ExtratoDTO(
-                extrato.getId(),
                 extrato.getDataHoraMovimento(),
                 extrato.getOperacao(),
                 extrato.getValor(),
@@ -27,7 +26,6 @@ public class ExtratoMapper {
 
     public Extrato toEntity(ExtratoDTO extratoDTO) {
         Extrato extrato = new Extrato();
-        extrato.setId(extratoDTO.getId());
         extrato.setDataHoraMovimento(extratoDTO.getDataHoraMovimento());
         extrato.setOperacao(extratoDTO.getOperacao());
         extrato.setValor(extratoDTO.getValor());
