@@ -1,7 +1,9 @@
 package acc.accenture.bank.service;
 
+import acc.accenture.bank.dtos.AgenciaDTO;
 import acc.accenture.bank.dtos.ContaCorrenteDTO;
 import acc.accenture.bank.dtos.ExtratoDTO;
+import acc.accenture.bank.exception.CampoObrigatorioException;
 import acc.accenture.bank.exception.EntidadeNaoEncontradaException;
 import acc.accenture.bank.exception.OperacaoDesconhecidaException;
 import acc.accenture.bank.exception.SaldoInsuficienteException;
@@ -47,6 +49,7 @@ public class ContaCorrenteService {
     }
 
     public ContaCorrenteDTO save(ContaCorrenteDTO contaCorrenteDTO) {
+        validarCamposObrigatorios(contaCorrenteDTO);
         ContaCorrente contaCorrente = contaCorrenteMapper.toEntity(contaCorrenteDTO);
         return contaCorrenteMapper.toDTO(contaCorrenteRepository.save(contaCorrente));
     }
@@ -62,6 +65,7 @@ public class ContaCorrenteService {
         if (!contaCorrenteRepository.existsById(id)) {
             throw new EntidadeNaoEncontradaException("Conta Corrente");
         }
+        validarCamposObrigatorios(contaCorrenteDTO);
         ContaCorrente contaCorrente = contaCorrenteMapper.toEntity(contaCorrenteDTO);
         contaCorrente.setId(id);
         return contaCorrenteMapper.toDTO(contaCorrenteRepository.save(contaCorrente));
@@ -144,6 +148,12 @@ public class ContaCorrenteService {
         return extratos.stream()
                 .map(extratoMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    private void validarCamposObrigatorios(ContaCorrenteDTO contaCorrenteDTO) {
+        if (contaCorrenteDTO.getNumero() == null || contaCorrenteDTO.getNumero().trim().isEmpty()) {
+            throw new CampoObrigatorioException("Numero da Conta Corrente");
+        }
     }
 
 }

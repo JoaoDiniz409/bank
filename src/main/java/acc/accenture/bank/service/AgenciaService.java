@@ -1,6 +1,8 @@
 package acc.accenture.bank.service;
 
 import acc.accenture.bank.dtos.AgenciaDTO;
+import acc.accenture.bank.dtos.ClienteDTO;
+import acc.accenture.bank.exception.CampoObrigatorioException;
 import acc.accenture.bank.exception.EntidadeNaoEncontradaException;
 import acc.accenture.bank.mapper.AgenciaMapper;
 import acc.accenture.bank.model.Agencia;
@@ -33,6 +35,7 @@ public class AgenciaService {
     }
 
     public AgenciaDTO save(AgenciaDTO agenciaDTO) {
+        validarCamposObrigatorios(agenciaDTO);
         Agencia agencia = agenciaMapper.toEntity(agenciaDTO);
         return agenciaMapper.toDTO(agenciaRepository.save(agencia));
     }
@@ -48,8 +51,21 @@ public class AgenciaService {
         if (!agenciaRepository.existsById(id)) {
             throw new EntidadeNaoEncontradaException("Agência");
         }
+        validarCamposObrigatorios(agenciaDTO);
         Agencia agencia = agenciaMapper.toEntity(agenciaDTO);
         agencia.setId(id);
         return agenciaMapper.toDTO(agenciaRepository.save(agencia));
+    }
+
+    private void validarCamposObrigatorios(AgenciaDTO agenciaDTO) {
+        if (agenciaDTO.getNome() == null || agenciaDTO.getNome().trim().isEmpty()) {
+            throw new CampoObrigatorioException("Nome da Agencia");
+        }
+        if (agenciaDTO.getEndereco() == null || agenciaDTO.getEndereco().trim().isEmpty()) {
+            throw new CampoObrigatorioException("Endereço da Agencia");
+        }
+        if (agenciaDTO.getTelefone() == null || agenciaDTO.getTelefone().trim().isEmpty()) {
+            throw new CampoObrigatorioException("Telefone da Agencia");
+        }
     }
 }

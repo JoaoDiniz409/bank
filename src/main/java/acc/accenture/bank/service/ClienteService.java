@@ -1,7 +1,9 @@
 package acc.accenture.bank.service;
 
 import acc.accenture.bank.dtos.ClienteDTO;
+import acc.accenture.bank.exception.CampoObrigatorioException;
 import acc.accenture.bank.exception.EntidadeNaoEncontradaException;
+import acc.accenture.bank.exception.TamanhoMaximoExcedidoException;
 import acc.accenture.bank.mapper.ClienteMapper;
 import acc.accenture.bank.model.Cliente;
 import acc.accenture.bank.repository.ClienteRepository;
@@ -33,6 +35,8 @@ public class ClienteService {
     }
 
     public ClienteDTO save(ClienteDTO clienteDTO) {
+        validarCamposObrigatorios(clienteDTO);
+        validarCPF(clienteDTO.getCpf());
         Cliente cliente = clienteMapper.toEntity(clienteDTO);
         return clienteMapper.toDTO(clienteRepository.save(cliente));
     }
@@ -48,8 +52,30 @@ public class ClienteService {
         if (!clienteRepository.existsById(id)) {
             throw new EntidadeNaoEncontradaException("Cliente");
         }
+        validarCamposObrigatorios(clienteDTO);
+        validarCPF(clienteDTO.getCpf());
         Cliente cliente = clienteMapper.toEntity(clienteDTO);
         cliente.setId(id);
         return clienteMapper.toDTO(clienteRepository.save(cliente));
     }
+
+    private void validarCamposObrigatorios(ClienteDTO clienteDTO) {
+        if (clienteDTO.getNome() == null || clienteDTO.getNome().trim().isEmpty()) {
+            throw new CampoObrigatorioException("Nome do cliente");
+        }
+        if (clienteDTO.getTelefone() == null || clienteDTO.getTelefone().trim().isEmpty()) {
+            throw new CampoObrigatorioException("Telefone do cliente");
+        }
+    }
+
+    private void validarCPF(String cpf) {
+        // Remover caracteres não numéricos (separadores e pontos)
+        String cpfNumeros = cpf.replaceAll("\\D", "");
+
+        // Verificar se tem mais que 14 caracteres
+        if (cpf.length() > 14) {
+            throw new TamanhoMaximoExcedidoException("CPF", 14);
+        }
+    }
+
 }
