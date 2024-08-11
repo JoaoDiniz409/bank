@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class ContaCorrenteDTO {
 
-    private Long id; // ID da conta corrente
+    // ID da conta corrente
     private String numero; // Número da conta corrente
     private BigDecimal saldo; // Saldo da conta corrente
     private Long agenciaId; // ID da agência
