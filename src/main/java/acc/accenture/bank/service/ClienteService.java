@@ -7,10 +7,12 @@ import acc.accenture.bank.exception.TamanhoMaximoExcedidoException;
 import acc.accenture.bank.mapper.ClienteMapper;
 import acc.accenture.bank.model.Cliente;
 import acc.accenture.bank.repository.ClienteRepository;
+import org.hibernate.annotations.NotFound;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,9 +31,9 @@ public class ClienteService {
     }
 
     public ClienteDTO findById(Long id) {
-        return clienteRepository.findById(id)
-                .map(clienteMapper::toDTO)
-                .orElseThrow(() -> new EntidadeNaoEncontradaException("Cliente"));
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Cliente não encontrado"));
+        return clienteMapper.toDTO(cliente);
     }
 
     public ClienteDTO save(ClienteDTO clienteDTO) {
