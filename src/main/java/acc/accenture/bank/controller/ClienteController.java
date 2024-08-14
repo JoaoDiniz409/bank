@@ -1,13 +1,16 @@
 package acc.accenture.bank.controller;
 
 import acc.accenture.bank.dtos.ClienteDTO;
+import acc.accenture.bank.exception.EntidadeNaoEncontradaException;
 import acc.accenture.bank.service.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/clientes")
 public class ClienteController {
@@ -22,7 +25,13 @@ public class ClienteController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ClienteDTO> getClienteById(@PathVariable Long id) {
-        return ResponseEntity.ok(clienteService.findById(id));
+        try {
+            ClienteDTO clienteDTO = clienteService.findById(id);
+            return ResponseEntity.ok(clienteDTO);
+        }catch (EntidadeNaoEncontradaException e ){
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
     @PostMapping

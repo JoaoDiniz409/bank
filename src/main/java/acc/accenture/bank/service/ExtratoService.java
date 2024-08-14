@@ -1,6 +1,7 @@
 package acc.accenture.bank.service;
 
 import acc.accenture.bank.dtos.ExtratoDTO;
+import acc.accenture.bank.exception.EntidadeNaoEncontradaException;
 import acc.accenture.bank.mapper.ExtratoMapper;
 import acc.accenture.bank.model.Extrato;
 import acc.accenture.bank.repository.ExtratoRepository;
@@ -28,7 +29,7 @@ public class ExtratoService {
     public ExtratoDTO findById(Long id) {
         return extratoRepository.findById(id)
                 .map(extratoMapper::toDTO)
-                .orElseThrow(() -> new RuntimeException("Extrato não encontrado")); // Exceção customizada recomendada
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Extrato"));
     }
 
     public List<ExtratoDTO> findByContaCorrenteId(Long contaCorrenteId) {
@@ -43,6 +44,9 @@ public class ExtratoService {
     }
 
     public void deleteById(Long id) {
+        if (!extratoRepository.existsById(id)) {
+            throw new EntidadeNaoEncontradaException("Extrato");
+        }
         extratoRepository.deleteById(id);
     }
 }
