@@ -1,7 +1,6 @@
 package acc.accenture.bank.controller;
 
 import acc.accenture.bank.dtos.ContaCorrenteDTO;
-import acc.accenture.bank.dtos.DepositoDTO;
 import acc.accenture.bank.dtos.ExtratoDTO;
 import acc.accenture.bank.enums.Operacao;
 import acc.accenture.bank.service.ContaCorrenteService;
